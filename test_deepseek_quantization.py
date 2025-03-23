@@ -12,9 +12,17 @@ MODEL_NAME = "deepseek-r1-distill-qwen-1.5b"
 prompt = "Explain how AI will grow in the future."
 headers = {"Content-Type": "application/json"}
 
+# Function to get the correct model based on quantization
+def get_model_name(quantization):
+    if quantization == "4bit":
+        return "deepseek-r1-distill-qwen-1.5b:4bit"
+    else:
+        return "deepseek-r1-distill-qwen-1.5b:8bit"
+
 # Function to measure response time
 def measure_response_time(quantization):
-    payload = {"model": MODEL_NAME, "prompt": prompt, "max_tokens": 100}
+    model_name = get_model_name(quantization)
+    payload = {"model": model_name, "prompt": prompt, "max_tokens": 100}
     start_time = time.time()
     response = requests.post(API_URL, json=payload, headers=headers)
     elapsed_time = time.time() - start_time
@@ -22,9 +30,10 @@ def measure_response_time(quantization):
 
 # Function to measure throughput (requests per second)
 def measure_throughput(quantization, num_requests=10):
+    model_name = get_model_name(quantization)
     start_time = time.time()
     for _ in range(num_requests):
-        requests.post(API_URL, json={"model": MODEL_NAME, "prompt": prompt, "max_tokens": 100}, headers=headers)
+        requests.post(API_URL, json={"model": model_name, "prompt": prompt, "max_tokens": 100}, headers=headers)
     elapsed_time = time.time() - start_time
     return num_requests / elapsed_time
 
@@ -44,7 +53,8 @@ def get_resource_utilization():
 # Function to measure scalability
 def measure_scalability(quantization, num_requests=50, batch_size=5):
     def send_request():
-        requests.post(API_URL, json={"model": MODEL_NAME, "prompt": prompt, "max_tokens": 100}, headers=headers)
+        model_name = get_model_name(quantization)
+        requests.post(API_URL, json={"model": model_name, "prompt": prompt, "max_tokens": 100}, headers=headers)
     
     threads = []
     start_time = time.time()
@@ -61,7 +71,7 @@ def measure_scalability(quantization, num_requests=50, batch_size=5):
 # Run tests for both 4-bit and 8-bit
 results = {}
 for quantization in ["4bit", "8bit"]:
-    print(f"\n🔹 Testing {quantization} model...")
+    print(f"\n Testing {quantization} model...")
     response_time, output = measure_response_time(quantization)
     throughput = measure_throughput(quantization)
     ram_usage, cpu_usage, gpu_usage = get_resource_utilization()
@@ -88,3 +98,4 @@ for quantization, metrics in results.items():
     print(f"GPU Usage: {metrics['GPU Usage']}%")
     print(f"Scalability (avg latency): {metrics['Scalability (avg latency)']:.3f} sec/request")
     print(f"\n🔹 Sample Response:", metrics["Sample Response"])
+
