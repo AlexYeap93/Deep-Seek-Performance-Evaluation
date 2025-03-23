@@ -85,6 +85,6 @@ for quantization, metrics in results.items():
     print(f"Throughput: {metrics['Throughput']:.2f} req/sec")
     print(f"RAM Usage: {metrics['RAM Usage']}%")
     print(f"CPU Usage: {metrics['CPU Usage']}%")
-    print(f"CPU Usage: {metrics['GPU Usage']}%")
+    print(f"GPU Usage: {metrics['GPU Usage']}%")
     print(f"Scalability (avg latency): {metrics['Scalability (avg latency)']:.3f} sec/request")
     print(f"\n🔹 Sample Response:", metrics["Sample Response"])
